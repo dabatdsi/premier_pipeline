@@ -1,0 +1,74 @@
+premier pipeline avec
+gitlab/jenkins/docker/ansible/jmeter
+
+definitions:
+** Vagrant est un outil en ligne de commande open source qui permet de créer et configurer des environnement de développement portables virtuels et complets. 
+
+
+**DevOPS: Le DevOps est une combinaison de philosophies culturelles, de pratiques et d'outils qui améliore la capacité d'une entreprise à livrer des applications et des services à un rythme élevé. 
+
+***Pipeline ?
+-- Cotinuous Integratio:build/test/merge -costructio  du livrable applicatif
+-- Continous Delivrery:  pousse l'application dans son dépot , dans un état deployable.
+-- Continous Deployment : déployment(installation) de l'application jusqu'en production
+
+****outils pour ce projet:
+-- scheduler:jenkins
+-- Orchestration:Ansible
+-- depot:gitlab
+-- livrable: image docker
+-- gestionnaire projet:Maven
+
+*** Infrastructure:
+--jenkins:jenkins/docker/docker-compose/ansible
+--gitlab
+--server BDD:postgresql
+--server dev:debian 10 /accés SSH
+--server stage : debiant 10 /accés ssh
+-- server pro:debian 10 /acces ssh
+
+1-Installion de vagrand:
+ici j'ai utilisé mon ordinateur windows
+1--aller sur le site de vagrant telecharger et installer vagrant par defaut.
+2-- creation de box
+ **aller sur powerShell taper pa commande 'vagrant version' pour verifier votre version installer.
+**  creer un dossier dev 'ici 'vagrant_dev' dans powerShell aller sur le dossier vagrant dev et ajouter les commande suivant
+
+**** vagrant box add ubuntu/focal64 : qui ajoute le box ubuuntu 64 bit 
+
+***vagrant init ubuntu/trusty64 : creer automatiquement le fichier vagrantfile,  c’est dans le fichier Vagrantfile que nous allons décrire tous ce que nous souhaitons automatiser .
+
+**** vagrant plugin install vagrant-vbguest:install les plugin
+
+**** vagrant up:pour lancer vagrant
+*** vagrant destroy:si une erreur timeout se presente  et reecrit la commande 'vagrant up ' .sino on fait
+
+***vagrant ssh:pour se connecter à notre machine virtuelle
+** pour lancer une machine individuel on tape la commande :vagrant up 'nom_fichier'
+
+**** pour les fichier de configuration:https://gitlab.com/xavki/pipeline-saison-1/-/tree
+
+*******************************************************************
+    # p1jenkins server
+  config.vm.define "p1jenkins-pipeline" do |p1jenkins|
+    p1jenkins.vm.box = "debian/trusty64"
+    p1jenkins.vm.hostname = "p1jenkins-pipeline"
+    p1jenkins.vm.box_url = "ubuntu/trusty64"
+    p1jenkins.vm.network :private_network, ip: "192.168.1.2"
+    p1jenkins.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 3072]
+      v.customize ["modifyvm", :id, "--name", "p1jenkins-pipeline"]
+      v.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+    config.vm.provision "shell", inline: <<-SHELL
+      sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config    
+      service ssh restart
+    SHELL
+    p1jenkins.vm.provision "shell", path: "install_p1jenkins.sh"
+  end
+end
+
+
+
